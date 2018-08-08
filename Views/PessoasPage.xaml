@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="xamarinrest.Views.PessoasPage">
+    <ListView x:Name="MyListView"
+            ItemsSource="{Binding ItemsListView}"
+            ItemTapped="Handle_ItemTapped"
+            CachingStrategy="RecycleElement"
+            VerticalOptions="FillAndExpand"
+            HasUnevenRows="true">
+
+        <!--Built in Cells-->
+        <ListView.ItemTemplate>
+            <DataTemplate>
+                <ViewCell>
+                    <StackLayout Padding="10">
+                        <Label Text="Id:" 
+                                    LineBreakMode="NoWrap"
+                                    FontSize="12" />
+                        <Label Text="{Binding Id}" 
+                                    LineBreakMode="NoWrap"
+                                    FontSize="12" />
+
+                        <Label Text="Nome:" 
+                                    LineBreakMode="NoWrap"
+                                    FontSize="12" />
+                        <Label Text="{Binding Nome}" 
+                                    LineBreakMode="NoWrap"
+                                    FontSize="16" />
+                    </StackLayout>
+                </ViewCell>
+            </DataTemplate>
+        </ListView.ItemTemplate>
+
+    </ListView>
+</ContentPage>
