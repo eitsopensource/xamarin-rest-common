@@ -10,8 +10,8 @@ namespace xamarinrest.Services
 {
     public class RestService
     {
-        private static readonly string Url = "http://192.168.20.16:8080/";
-        private static readonly HttpClient _client = new HttpClient();
+        public static readonly string Url = "http://192.168.20.16:8080/";
+        public static readonly HttpClient _client = new HttpClient();
 
         public static void Init()
         {
