@@ -21,21 +21,15 @@ namespace xamarinrest.Services.Rest.Token
         public static readonly string _authRequest =
             "https://www.facebook.com/dialog/oauth" +
             "?client_id={0}" +
-            "&redirect_uri={1}";
-
-        //request access token URI
-        public static readonly string _requestUri =
-            "https://graph.facebook.com/oauth/access_token" +
-            "?client_id={0}" +
             "&redirect_uri={1}" +
-            "&client_secret={2}" +
-            "&code={3}";
+            "&display=popup" +
+            "&response_type=token";
 
         //request credentials URI 
         public static readonly string _userProfileUri =
-            "https://graph.facebook.com/me?access_token=" +
-            "?access_token={0}";
-
+            "https://graph.facebook.com/me" +
+            "?fields=name,email" +
+            "&access_token={0}";
 
         //get login form URI
         public static string GetAuthRequestUri()
@@ -44,38 +38,23 @@ namespace xamarinrest.Services.Rest.Token
             return authUri;
         }
 
-        //request access token URI
-        public static string GetTokenRequestUri( string code )
-        {
-            var tokenUri = new StringBuilder().AppendFormat( _requestUri, code, ClientId, ClientSecret, RedirectUri ).ToString();
-            return tokenUri;
-        }
-
-        //get access token method
-        public static async Task<string> GetAccessToken( string uri )
-        {
-            var json = await RestService.GetAsync(uri);
-            string accessToken = JsonConvert.DeserializeObject<JObject>(json).Value<string>("access_token");
-            return accessToken;
-        }
-
         //manage user profile infos
         public static async Task<string> GetUserProfile( string accessToken )
         {
             var userProfileUri = new StringBuilder().AppendFormat( _userProfileUri, accessToken ).ToString();
-            var userJson = await RestService.GetAsync( userProfileUri );
+            var userJson = await RestService._client.GetStringAsync(userProfileUri);
 
             //var facebookProfile = JsonConvert.DeserializeObject<FacebookProfile>(userJson);
             return userJson;
         }
 
-        //extract '?code=<hash>'
-        private static string ExtractCodeFromUrl(string url)
+        //extract '#access_token=<hash>'
+        private static string ExtractAccessTokenFromUrl(string url)
         {
-            if (url.Contains("code="))
+            if (url.Contains("access_token="))
             {
                 List<string> attributes = new List<string>(url.Split('&'));
-                var code = attributes.Find(s => s.Contains("code=")).Split('=')[1];
+                var code = attributes.Find(s => s.Contains("access_token=")).Split('=')[1];
 
                 return code;
             }
@@ -93,13 +72,9 @@ namespace xamarinrest.Services.Rest.Token
             };
 
             webView.Navigated += async (object sender, WebNavigatedEventArgs e) => {
-                var code = ExtractCodeFromUrl(e.Url);
-
-                if (code != "")
+                var accessToken = ExtractAccessTokenFromUrl(e.Url);
+                if (accessToken != "")
                 {
-                    string accessTokenPostUri = GetTokenRequestUri(code);
-                    string accessToken = await GetAccessToken(accessTokenPostUri);
-
                     Debug.WriteLine(await GetUserProfile(accessToken));
                 }
             };

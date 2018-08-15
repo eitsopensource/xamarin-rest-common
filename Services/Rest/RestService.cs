@@ -10,7 +10,7 @@ namespace xamarinrest.Services
 {
     public class RestService
     {
-        public static readonly string Url = "http://192.168.20.16:8080/";
+        public static readonly string Url = "http://192.168.20.13:8080/";
         public static readonly HttpClient _client = new HttpClient();
 
         public static void Init()
@@ -61,7 +61,7 @@ namespace xamarinrest.Services
         public static async Task<string> GetAsync( string uri )
         {
             string content = await _client.GetStringAsync(Url + uri);
-            return await Task.FromResult( content );
+            return content;
         }
     }
 }
