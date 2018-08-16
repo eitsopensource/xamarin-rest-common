@@ -13,31 +13,26 @@ namespace xamarinrest.Services.Rest
 {
     public class SyncService
     {
-        private static readonly TimeSpan syncTimeSpan = new TimeSpan(0, 0, 5);
-        private static readonly TimeSpan syncDeleteTimeSpan = new TimeSpan(0, 0, 5);
+        private static readonly TimeSpan defaultSyncTimeSpan = new TimeSpan(0, 0, 5);
+        private static readonly TimeSpan defaultSyncDeleteTimeSpan = new TimeSpan(0, 0, 5);
 
-        public static void Init()
+        //Faz com que seja chamado o REST no endereço de SYNC
+        public static void Sync<T>() where T : new ()
         {
-            //...
-
-            //Cria um timer que executa uma chamada para "SyncUri" automáticamente a cada X periodos
-            SyncService.StartAutoSync<Pessoa>();
-            SyncService.StartAutoSync<Empresa>();
-
-            SyncService.StartAutoSyncDeleted<Pessoa>();
-
-            //...
+            Task.Run(() => {
+                requestRestAndSync<T>();
+            });
         }
 
         //Faz com que seja chamado o REST no endereço de SYNC a cada X segundos
-        public static void StartAutoSync<T>() where T : new()
+        public static void StartAutoSync<T>( TimeSpan? syncTimeSpan = null ) where T : new()
         {
             Task.Run(() => {
                 requestRestAndSync<T>();
             });
 
             var holder = RestHolder<T>.instance;
-            Device.StartTimer( syncTimeSpan, () => {
+            Device.StartTimer( syncTimeSpan ?? defaultSyncTimeSpan, () => {
 
                 Task.Run(() => {
                     requestRestAndSync<T>();
@@ -91,14 +86,14 @@ namespace xamarinrest.Services.Rest
         }
 
         //Faz com que seja chamado o REST no endereço de SYNC DELETED a cada X segundos
-        public static void StartAutoSyncDeleted<T>() where T : new()
+        public static void StartAutoSyncDeleted<T>( TimeSpan? syncDeleteTimeSpan = null ) where T : new()
         {
             Task.Run(() => {
                 requestRestAndSyncDeleted<T>();
             });
 
             var holder = RestHolder<T>.instance;
-            Device.StartTimer(syncTimeSpan, () => {
+            Device.StartTimer( syncDeleteTimeSpan ?? defaultSyncDeleteTimeSpan, () => {
 
                 Task.Run(() => {
                     requestRestAndSyncDeleted<T>();

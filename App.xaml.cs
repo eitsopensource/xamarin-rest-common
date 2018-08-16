@@ -14,13 +14,7 @@ namespace xamarinrest
 		
 		public App ()
 		{
-
-            SQLiteRepository.Init();
-            RestService.Init();
-            SyncService.Init();
             InitializeComponent();
-
-
 			MainPage = new MainPage();
 		}
 

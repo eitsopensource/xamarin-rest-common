@@ -5,43 +5,55 @@ using System;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace xamarinrest.Services
 {
     public class RestService
     {
-        public static readonly string Url = "http://192.168.20.13:8080/";
+        public static string Url = "http://localhost:8080/";
         public static readonly HttpClient _client = new HttpClient();
 
-        public static void Init()
+        /// <summary>
+        /// Autentica o usuário na Uri definida
+        /// </summary>
+        /// <param name="username"></param>
+        /// <param name="password"></param>
+        /// <param name="uri"></param>
+        /// <returns></returns>
+        public static async Task<int> Authenticate( string username, string password, string uri )
         {
-            //Obrigatório; Cria a configuração de REST para a entidade T especificada em <T>
-            var pessoaHolder = new RestHolder<Pessoa> {
-                SyncUri = "pessoa/merge?date=",
-                SyncDeletedUri = "pessoa/mergeDeleted?date=",
-                InsertUri = "pessoa/insert",
-                UpdateUri = "pessoa/update",
-                DeleteUri = "pessoa/delete/{0}"
-            };
-            var empresaHolder = new RestHolder<Empresa> {
-                SyncUri = "empresa/merge?date=",
-                InsertUri = "empresa/insert",
-                UpdateUri = "empresa/update",
-                DeleteUri = "empresa/delete/{0}"
-            };
+            var byteArray = Encoding.ASCII.GetBytes( username + ":" + password );
+            _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue( "Basic", Convert.ToBase64String( byteArray ) );
+
+            HttpResponseMessage response = await _client.GetAsync( Url + uri );
+            HttpContent content = response.Content;
+                          
+            Debug.WriteLine( "Response StatusCode: " + (int) response.StatusCode );
+            return (int) response.StatusCode;
         }
 
-        //generic method to send entity with rest HTTP PUT/POST
-        public static async Task<T> Send<T>( string fullUri, Object entity ) where T : new ()
+        /// <summary>
+        /// Generic method to send entity with rest HTTP PUT/POST
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="uri"></param>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        public static async Task<T> Send<T>( string uri, Object entity ) where T : new ()
         {
             string content = JsonConvert.SerializeObject(entity);
             StringContent restContent = new StringContent(content, Encoding.UTF8, "application/json");
-            HttpResponseMessage response = await _client.PostAsync( fullUri, restContent );
-            return JsonConvert.DeserializeObject<T>(response.Content.ToString());
+            HttpResponseMessage response = await _client.PostAsync( Url + uri, restContent );
+            string result = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<T>( result );
         }
 
-   
-        //generic method to delete with rest HTTP DELETE
+        /// <summary>
+        /// Generic method to delete with rest HTTP DELETE
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id"></param>
         public static async void Delete<T>( long id ) where T : new()
         {
             var holder = RestHolder<T>.instance;
@@ -50,7 +62,11 @@ namespace xamarinrest.Services
             await _client.DeleteAsync( fullUri.ToString() );
         }
 
-        //generic method to rest HTTP GET
+        /// <summary>
+        /// Generic method to rest HTTP GET
+        /// </summary>
+        /// <param name="uri"></param>
+        /// <returns></returns>
         public static async Task<string> GetAsync( string uri )
         {
             string content = await _client.GetStringAsync(Url + uri);

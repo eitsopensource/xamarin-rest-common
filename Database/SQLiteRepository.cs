@@ -12,15 +12,13 @@ namespace xamarinrest.Database
     {
         private static readonly string dbPath = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Personal ), "appdatabase.db" );
         public static readonly SQLiteConnection db = new SQLiteConnection( dbPath );
-        
-        public static void Init()
-        {
-            Console.WriteLine("Creating database, if it doesn't already exist");
-            db.CreateTable<Pessoa>();
-            db.CreateTable<Empresa>();
-        }
-        
-        //Método para dar merge na list de entidades
+
+        /// <summary>
+        /// Método para dar merge na list de entidades
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="entityList"></param>
+        /// 
         public static async void SyncEntities<T>( List<T> entityList ) where T : new()
         {
             //Insere todas as entidades async passadas por parametro
@@ -42,7 +40,6 @@ namespace xamarinrest.Database
                 rowsAffectedAll += rowsAffected;
             }
             
-
             if ( rowsAffectedAll > 0 )
             {
                 foreach (Subscription<T> subscription in Subscription<T>.subscriptionDictionary.Values)
@@ -52,7 +49,11 @@ namespace xamarinrest.Database
             }
         }
 
-        //Apaga do cache. Remove do cache local as entidades que foram deletadas na nuvem
+        /// <summary>
+        /// Apaga do cache. Remove do cache local as entidades que foram deletadas na nuvem
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="deletedIds"></param>
         public static async void SyncDeletedEntities<T>( List<long> deletedIds ) where T : new()
         {
             var rowsAffected = 0;
@@ -70,13 +71,23 @@ namespace xamarinrest.Database
             }
         }
 
-        //Retorna uma lista do que foi descrito na query
+        /// <summary>
+        /// Retorna uma lista do que foi descrito na query
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="query"></param>
+        /// <returns></returns>
         public static async Task<ObservableCollection<T>> Query<T>( string query ) where T : new()
         {
             return await Task.FromResult( new ObservableCollection<T>( db.Query<T>( query ) ) );      
         }
 
-        //Retorna a entidade com o Id especificado
+        /// <summary>
+        /// Retorna a entidade com o Id especificado
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public static async Task<T> FindById<T>( long id ) where T : new()
         {
             return await Task.FromResult( db.Get<T>( id ) );
