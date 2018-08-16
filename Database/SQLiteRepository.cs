@@ -11,7 +11,7 @@ namespace xamarinrest.Database
     public class SQLiteRepository
     {
         private static readonly string dbPath = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Personal ), "appdatabase.db" );
-        private static readonly SQLiteConnection db = new SQLiteConnection( dbPath );
+        public static readonly SQLiteConnection db = new SQLiteConnection( dbPath );
         
         public static void Init()
         {

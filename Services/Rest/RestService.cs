@@ -32,22 +32,15 @@ namespace xamarinrest.Services
         }
 
         //generic method to send entity with rest HTTP PUT/POST
-        public static async void Send<T>( string fullUri, Object entity ) where T : new()
+        public static async Task<T> Send<T>( string fullUri, Object entity ) where T : new ()
         {
-            var holder = RestHolder<T>.instance;
-            string content = JsonConvert.SerializeObject( entity );
+            string content = JsonConvert.SerializeObject(entity);
             StringContent restContent = new StringContent(content, Encoding.UTF8, "application/json");
-            await _client.PostAsync( fullUri, restContent );
+            HttpResponseMessage response = await _client.PostAsync( fullUri, restContent );
+            return JsonConvert.DeserializeObject<T>(response.Content.ToString());
         }
 
-        //generic method to insert/update with rest HTTP PUT/POST
-        public static void SendEntity<T>( AbstractEntity entity ) where T : new()
-        {
-            var holder = RestHolder<T>.instance;
-            if ( entity.Id == null ) Send<T>( Url + holder.InsertUri, entity );
-            else Send<T>( Url + holder.UpdateUri, entity );
-        }
-
+   
         //generic method to delete with rest HTTP DELETE
         public static async void Delete<T>( long id ) where T : new()
         {
