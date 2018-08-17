@@ -21,16 +21,17 @@ namespace xamarinrest.Services
         /// <param name="password"></param>
         /// <param name="uri"></param>
         /// <returns></returns>
-        public static async Task<int> Authenticate( string username, string password, string uri )
+        public static async Task<T> Authenticate<T>( string username, string password, string uri ) where T : new()
         {
             var byteArray = Encoding.ASCII.GetBytes( username + ":" + password );
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue( "Basic", Convert.ToBase64String( byteArray ) );
 
             HttpResponseMessage response = await _client.GetAsync( Url + uri );
             HttpContent content = response.Content;
-                          
-            Debug.WriteLine( "Response StatusCode: " + (int) response.StatusCode );
-            return (int) response.StatusCode;
+
+            string result = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<T>(result);
+
         }
 
         /// <summary>

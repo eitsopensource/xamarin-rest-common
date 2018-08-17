@@ -63,23 +63,16 @@ namespace xamarinrest.Services.Rest.Token
         }
 
         //get webView Login FORM
-        public static WebView GetFacebookAuthForm()
+        public static void GetFacebookAuthForm( WebView webview, Action<string> callback)
         {
-            var webView = new WebView
-            {
-                Source = GetAuthRequestUri(),
-                HeightRequest = 1
-            };
-
-            webView.Navigated += async (object sender, WebNavigatedEventArgs e) => {
+            webview.Source = GetAuthRequestUri();
+            webview.Navigated += async (object sender, WebNavigatedEventArgs e) => {
                 var accessToken = ExtractAccessTokenFromUrl(e.Url);
                 if (accessToken != "")
                 {
-                    Debug.WriteLine(await GetUserProfile(accessToken));
+                    callback.Invoke( accessToken );
                 }
             };
-
-            return webView;
         }
     }
 

@@ -1,4 +1,5 @@
-﻿using Plugin.Settings;
+﻿using Newtonsoft.Json;
+using Plugin.Settings;
 using Plugin.Settings.Abstractions;
 using System;
 
@@ -38,6 +39,19 @@ namespace xamarinrest.Configuration
         public static void setDateTime( string key, DateTime value )
         {
             AppSettings.AddOrUpdateValue(key, value, filePrefs);
+        }
+
+
+        public static void putEntity<T>( string key, T entity )
+        {
+            var entityJson = JsonConvert.SerializeObject(entity);
+            AppSettings.AddOrUpdateValue(key, entityJson, filePrefs);
+        }
+
+        public static T getEntity<T>(string key)
+        {
+            var entityJson = AppSettings.GetValueOrDefault(key, string.Empty, filePrefs);
+            return JsonConvert.DeserializeObject<T>(entityJson);
         }
     }
 }
