@@ -90,7 +90,16 @@ namespace xamarinrest.Database
         /// <returns></returns>
         public static async Task<T> FindById<T>( long id ) where T : new()
         {
-            return await Task.FromResult( db.Get<T>( id ) );
+            try
+            {
+                return await Task.FromResult( db.Get<T>(id) );
+
+            }
+            catch( Exception e )
+            {
+                Console.WriteLine(e.Message);
+                return default(T);
+            }
         }
     }
 }

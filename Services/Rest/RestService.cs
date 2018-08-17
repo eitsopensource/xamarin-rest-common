@@ -72,5 +72,17 @@ namespace xamarinrest.Services
             string content = await _client.GetStringAsync(Url + uri);
             return content;
         }
+        
+        /// <summary>
+        /// Generic method to rest HTTP GET
+        /// </summary>
+        /// <param name="uri"></param>
+        /// <returns></returns>
+        public static async Task<T> GetEntityAsync<T>( string uri ) where T : new()
+        {
+            HttpResponseMessage response = await _client.GetAsync(Url + uri);
+            string result = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<T>(result);
+        }
     }
 }
