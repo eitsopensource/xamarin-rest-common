@@ -21,16 +21,26 @@ namespace xamarinrest.Services
         /// <param name="password"></param>
         /// <param name="uri"></param>
         /// <returns></returns>
-        public static async Task<T> Authenticate<T>( string username, string password, string uri ) where T : new()
+        public static async Task<string> Authenticate<T>( string username, string password, string uri ) where T : new()
         {
-            var byteArray = Encoding.ASCII.GetBytes( username + ":" + password );
+            var byteArray = Encoding.ASCII.GetBytes("mobileapp:eits2018");
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue( "Basic", Convert.ToBase64String( byteArray ) );
 
-            HttpResponseMessage response = await _client.GetAsync( Url + uri );
+            StringContent restContent = new StringContent("", Encoding.UTF8, "application/json");
+
+
+            //  HttpResponseMessage response = await _client.GetAsync( Url + uri + "?grant_type=password&username=" + username + "&password=" + password);
+            HttpResponseMessage response = await _client.PostAsync( Url + "oauth/token?grant_type=password&username=admin@admin.com&password=admin", restContent);
+
             HttpContent content = response.Content;
+            
+
+            //string content = JsonConvert.SerializeObject(entity);
+            //StringContent restContent = new StringContent(content, Encoding.UTF8, "application/json");
+            //HttpResponseMessage response = await _client.PostAsync(Url + uri, restContent);
 
             string result = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<T>(result);
+            return result; //JsonConvert.DeserializeObject<T>(result);
 
         }
 
