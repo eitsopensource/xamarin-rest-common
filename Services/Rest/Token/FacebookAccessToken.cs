@@ -34,7 +34,8 @@ namespace xamarinrest.Services.Rest.Token
         //get login form URI
         public static string GetAuthRequestUri()
         {
-            var authUri = new StringBuilder().AppendFormat( _authRequest, ClientId, RedirectUri ).ToString();
+            var authUri = RestService.Url + "login/facebook?mobileLogin=1" ;
+               // new StringBuilder().AppendFormat( _authRequest, ClientId, RedirectUri ).ToString();
             return authUri;
         }
 

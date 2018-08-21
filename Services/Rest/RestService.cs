@@ -6,6 +6,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using Newtonsoft.Json.Linq;
+using xamarinrest.Configuration;
 
 namespace xamarinrest.Services
 {
@@ -15,35 +17,53 @@ namespace xamarinrest.Services
         public static readonly HttpClient _client = new HttpClient();
 
         /// <summary>
-        /// Autentica o usuário na Uri definida
+        /// 
         /// </summary>
         /// <param name="username"></param>
         /// <param name="password"></param>
         /// <param name="uri"></param>
         /// <returns></returns>
-        public static async Task<string> Authenticate<T>( string username, string password, string uri ) where T : new()
+        public static async Task<string> Authenticate( string username, string password, string uri )
         {
             var byteArray = Encoding.ASCII.GetBytes("mobileapp:eits2018");
+
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue( "Basic", Convert.ToBase64String( byteArray ) );
-
+    
             StringContent restContent = new StringContent("", Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await _client.PostAsync( Url + uri + "?grant_type=password&username=" + username + "&password=" + password, restContent);
 
-
-            //  HttpResponseMessage response = await _client.GetAsync( Url + uri + "?grant_type=password&username=" + username + "&password=" + password);
-            HttpResponseMessage response = await _client.PostAsync( Url + "oauth/token?grant_type=password&username=admin@admin.com&password=admin", restContent);
-
-            HttpContent content = response.Content;
+            if ( response.IsSuccessStatusCode )
+            {
+                String token = JObject.Parse(await response.Content.ReadAsStringAsync())["access_token"].ToString();
+                SetOAuthToken(token);
+                return token;
+            }
             
-
-            //string content = JsonConvert.SerializeObject(entity);
-            //StringContent restContent = new StringContent(content, Encoding.UTF8, "application/json");
-            //HttpResponseMessage response = await _client.PostAsync(Url + uri, restContent);
-
-            string result = await response.Content.ReadAsStringAsync();
-            return result; //JsonConvert.DeserializeObject<T>(result);
-
+            return null;              
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void Logout()
+        {
+            SetOAuthToken("");
+            Prefs.putString("authenticatedUser", "");
+        }
+
+        /// <summary>
+        ///  
+        /// </summary>
+        /// <param name="token"></param>
+        public static void SetOAuthToken( string token )
+        {
+            Prefs.putString("token", token);
+            _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+          
+        }
+
+
+        
         /// <summary>
         /// Generic method to send entity with rest HTTP PUT/POST
         /// </summary>
@@ -79,9 +99,8 @@ namespace xamarinrest.Services
         /// <param name="uri"></param>
         /// <returns></returns>
         public static async Task<string> GetAsync( string uri )
-        {
-            string content = await _client.GetStringAsync(Url + uri);
-            return content;
+        {           
+            return await _client.GetStringAsync(Url + uri);
         }
         
         /// <summary>
@@ -95,5 +114,9 @@ namespace xamarinrest.Services
             string result = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<T>(result);
         }
+
+   
+
+
     }
 }
