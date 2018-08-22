@@ -42,14 +42,6 @@ namespace xamarinrest.Services
             return null;              
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public static void Logout()
-        {
-            SetOAuthToken("");
-            Prefs.putString("authenticatedUser", "");
-        }
 
         /// <summary>
         ///  

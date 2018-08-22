@@ -51,6 +51,8 @@ namespace xamarinrest.Configuration
         public static T getEntity<T>(string key)
         {
             var entityJson = AppSettings.GetValueOrDefault(key, string.Empty, filePrefs);
+            if (entityJson == "") return default(T);
+            
             return JsonConvert.DeserializeObject<T>(entityJson);
         }
     }
