@@ -52,12 +52,11 @@ namespace xamarinrest.Services.Rest.Token
         //extract '#access_token=<hash>'
         private static string ExtractAccessTokenFromUrl(string url)
         {
-            if (url.Contains("access_token="))
+            if (url.Contains("#"))
             {
-                List<string> attributes = new List<string>(url.Split('&'));
-                var code = attributes.Find(s => s.Contains("access_token=")).Split('=')[1];
+                List<string> attributes = new List<string>(url.Split('#'));
 
-                return code;
+                return attributes[1];
             }
 
             return string.Empty;
