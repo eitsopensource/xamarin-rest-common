@@ -48,7 +48,7 @@ namespace xamarinrest.Services.Rest
             var holder = RestHolder<T>.instance;
             if (holder.LockSyncThread) return;
             holder.LockSyncThread = true;
-
+            
             try
             {
                 //Pega o DateTime da ultima requisição desta Uri
@@ -93,7 +93,7 @@ namespace xamarinrest.Services.Rest
             });
 
             var holder = RestHolder<T>.instance;
-            Device.StartTimer( syncDeleteTimeSpan ?? defaultSyncDeleteTimeSpan, () => {
+            Device.StartTimer( syncDeleteTimeSpan ?? defaultSyncDeleteTimeSpan, () => { 
 
                 Task.Run(() => {
                     requestRestAndSyncDeleted<T>();

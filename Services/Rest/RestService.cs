@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using Newtonsoft.Json.Linq;
 using xamarinrest.Configuration;
+using xamarinrest.Services.Rest.Exceptions;
 
 namespace xamarinrest.Services
 {
@@ -54,8 +55,6 @@ namespace xamarinrest.Services
           
         }
 
-
-        
         /// <summary>
         /// Generic method to send entity with rest HTTP PUT/POST
         /// </summary>
@@ -63,13 +62,42 @@ namespace xamarinrest.Services
         /// <param name="uri"></param>
         /// <param name="entity"></param>
         /// <returns></returns>
-        public static async Task<T> Send<T>( string uri, Object entity ) where T : new ()
+        public static async Task<T> Send<T>(string uri, Object entity) where T : new()
         {
             string content = JsonConvert.SerializeObject(entity);
             StringContent restContent = new StringContent(content, Encoding.UTF8, "application/json");
-            HttpResponseMessage response = await _client.PostAsync( Url + uri, restContent );
+            HttpResponseMessage response = await _client.PostAsync(Url + uri, restContent);
             string result = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<T>( result );
+            return JsonConvert.DeserializeObject<T>(result);
+        }
+
+        /// <summary>
+        /// Generic method to send entity with rest HTTP PUT/POST
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="uri"></param>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        public static async Task<int> Send<T>( string uri, T entity, Action<T> onSuccess, Action<RestException> onFailure ) where T : new ()
+        {
+            string content = JsonConvert.SerializeObject(entity);
+            StringContent restContent = new StringContent(content, Encoding.UTF8, "application/json");
+
+            HttpResponseMessage response = await _client.PostAsync( Url + uri, restContent );
+
+            string result = await response.Content.ReadAsStringAsync();
+            if (response.IsSuccessStatusCode)
+            {
+                
+                onSuccess.Invoke( JsonConvert.DeserializeObject<T>( result ) );
+            }
+            else
+            {
+                var exceptionResult = JsonConvert.DeserializeObject<RestException>(result);
+                onFailure.Invoke( exceptionResult );
+            }
+
+            return (int) response.StatusCode;
         }
 
         /// <summary>
