@@ -43,7 +43,6 @@ namespace xamarinrest.Services
             return null;              
         }
 
-
         /// <summary>
         ///  
         /// </summary>
@@ -72,28 +71,28 @@ namespace xamarinrest.Services
         }
 
         /// <summary>
-        /// Generic method to send entity with rest HTTP PUT/POST
+        /// Generic 'Post' RESTful API implementation
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="uri"></param>
-        /// <param name="entity"></param>
+        /// <typeparam name="T">Class to deserialize response result</typeparam>
+        /// <param name="uri">RESTful API Path</param>
+        /// <param name="onSuccess">Function to invoke on HTTP status 200 (ok)</param>
+        /// <param name="onFailure">Function to invoke on HTTP status not 200 (failure)</param>
         /// <returns></returns>
         public static async Task<int> Send<T>( string uri, T entity, Action<T> onSuccess, Action<RestException> onFailure ) where T : new ()
         {
-            string content = JsonConvert.SerializeObject(entity);
-            StringContent restContent = new StringContent(content, Encoding.UTF8, "application/json");
+            string content = JsonConvert.SerializeObject( entity );
+            StringContent restContent = new StringContent( content, Encoding.UTF8, "application/json" );
 
             HttpResponseMessage response = await _client.PostAsync( Url + uri, restContent );
-
             string result = await response.Content.ReadAsStringAsync();
-            if (response.IsSuccessStatusCode)
+
+            if ( response.IsSuccessStatusCode )
             {
-                
                 onSuccess.Invoke( JsonConvert.DeserializeObject<T>( result ) );
             }
             else
             {
-                var exceptionResult = JsonConvert.DeserializeObject<RestException>(result);
+                var exceptionResult = JsonConvert.DeserializeObject<RestException>( result );
                 onFailure.Invoke( exceptionResult );
             }
 
@@ -124,19 +123,29 @@ namespace xamarinrest.Services
         }
         
         /// <summary>
-        /// Generic method to rest HTTP GET
+        /// Generic 'Get' RESTful API implementation
         /// </summary>
-        /// <param name="uri"></param>
+        /// <typeparam name="T">Class to deserialize response result</typeparam>
+        /// <param name="uri">RESTful API Path</param>
+        /// <param name="onSuccess">Function to invoke on HTTP status 200 (ok)</param>
+        /// <param name="onFailure">Function to invoke on HTTP status not 200 (failure)</param>
         /// <returns></returns>
-        public static async Task<T> GetEntityAsync<T>( string uri ) where T : new()
+        public static async Task<int> Get<T>( string uri, Action<T> onSuccess, Action<RestException> onFailure ) where T : new()
         {
-            HttpResponseMessage response = await _client.GetAsync(Url + uri);
+            HttpResponseMessage response = await _client.GetAsync( Url + uri );
             string result = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<T>(result);
+
+            if ( response.IsSuccessStatusCode )
+            {
+                onSuccess.Invoke( JsonConvert.DeserializeObject<T>( result ) );
+            }
+            else
+            {
+                var exceptionResult = JsonConvert.DeserializeObject<RestException>( result );
+                onFailure.Invoke( exceptionResult );
+            }
+
+            return (int) response.StatusCode;
         }
-
-   
-
-
     }
 }
