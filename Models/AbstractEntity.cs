@@ -13,7 +13,7 @@ namespace xamarinrest.Models
         protected internal long? _id = null;
         protected internal DateTime? _created = null;
 
-        [JsonProperty("id")] //This maps the element title of your web service to your model
+        [JsonProperty("Id")] //This maps the element title of your web service to your model
         [PrimaryKey, Column("id")]
         public long? Id
         {
@@ -25,7 +25,7 @@ namespace xamarinrest.Models
             }
         }
 
-        [JsonProperty("created")]
+        [JsonProperty("Created")]
         [Column("created")]
         public DateTime? Created
         {
