@@ -43,6 +43,8 @@ namespace xamarinrest.Services
             return null;              
         }
 
+     
+
         /// <summary>
         ///  
         /// </summary>
@@ -146,6 +148,18 @@ namespace xamarinrest.Services
             }
 
             return (int) response.StatusCode;
+        }
+
+
+        public static async Task<T> Get2<T>(string uri)
+        {
+            HttpResponseMessage response = await _client.GetAsync(Url + uri);
+            string result = await response.Content.ReadAsStringAsync();
+            if (response.IsSuccessStatusCode)
+            {
+                return JsonConvert.DeserializeObject<T>(result);
+            }
+            return default(T);
         }
     }
 }
