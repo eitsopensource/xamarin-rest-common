@@ -25,8 +25,9 @@ namespace xamarinrest.Models
             }
         }
 
-        [JsonProperty("Created")]
+        //[JsonProperty("Created")]
         [Column("created")]
+        [JsonIgnore]
         public DateTime? Created
         {
             get => _created;

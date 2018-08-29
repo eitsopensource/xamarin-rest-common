@@ -13,8 +13,8 @@ namespace xamarinrest.Services.Rest
 {
     public class SyncService
     {
-        private static readonly TimeSpan defaultSyncTimeSpan = new TimeSpan(0, 0, 5);
-        private static readonly TimeSpan defaultSyncDeleteTimeSpan = new TimeSpan(0, 0, 5);
+        private static readonly TimeSpan defaultSyncTimeSpan = new TimeSpan(0, 0, 20);
+        private static readonly TimeSpan defaultSyncDeleteTimeSpan = new TimeSpan(0, 0, 20);
 
         //Faz com que seja chamado o REST no endereço de SYNC
         public static void Sync<T>() where T : new ()
