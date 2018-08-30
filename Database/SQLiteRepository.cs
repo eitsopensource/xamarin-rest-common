@@ -13,6 +13,28 @@ namespace xamarinrest.Database
         private static readonly string dbPath = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Personal ), "appdatabase.db" );
         public static readonly SQLiteConnection db = new SQLiteConnection( dbPath );
 
+        public static async void SyncEntity<T>( T entity )
+        {
+            var rowsAffected = 0;
+            try //Quando a requisição tenta inserir uma entidade deletada ocorre um erro de constraint
+            {
+                rowsAffected = await Task.FromResult(db.Update(entity));
+                if (rowsAffected == 0) rowsAffected = await Task.FromResult(db.Insert(entity));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+            if ( rowsAffected > 0 )
+            {
+                foreach (Subscription<T> subscription in Subscription<T>.subscriptionDictionary.Values)
+                {
+                    subscription.Callback.Invoke();
+                }
+            }
+        }
+
         /// <summary>
         /// Método para dar merge na list de entidades
         /// </summary>

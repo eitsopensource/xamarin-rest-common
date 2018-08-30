@@ -24,7 +24,7 @@ namespace xamarinrest.Services
         /// <param name="password"></param>
         /// <param name="uri"></param>
         /// <returns></returns>
-        public static async Task<string> Authenticate( string username, string password, string uri )
+        public static async void Authenticate( string username, string password, string uri, Action<string> onSuccess, Action<RestException> onFailure = null )
         {
             var byteArray = Encoding.ASCII.GetBytes("mobileapp:eits2018");
 
@@ -32,15 +32,20 @@ namespace xamarinrest.Services
     
             StringContent restContent = new StringContent("", Encoding.UTF8, "application/json");
             HttpResponseMessage response = await _client.PostAsync( Url + uri + "?grant_type=password&username=" + username + "&password=" + password, restContent);
+            var json = await response.Content.ReadAsStringAsync();
 
             if ( response.IsSuccessStatusCode )
             {
-                String token = JObject.Parse(await response.Content.ReadAsStringAsync())["access_token"].ToString();
-                SetOAuthToken(token);
-                return token;
+                
+                String token = JObject.Parse( json )["access_token"].ToString();
+                SetOAuthToken( token );
+                onSuccess.Invoke( token );
             }
-            
-            return null;              
+            else
+            {
+                var exceptionResult = JsonConvert.DeserializeObject<RestException>( json );
+                if( onFailure != null ) onFailure.Invoke( exceptionResult );
+            }             
         }
 
      
@@ -95,7 +100,7 @@ namespace xamarinrest.Services
             else
             {
                 var exceptionResult = JsonConvert.DeserializeObject<RestException>( result );
-                onFailure.Invoke( exceptionResult );
+                if (onFailure != null) onFailure.Invoke( exceptionResult );
             }
 
             return (int) response.StatusCode;
@@ -132,34 +137,28 @@ namespace xamarinrest.Services
         /// <param name="onSuccess">Function to invoke on HTTP status 200 (ok)</param>
         /// <param name="onFailure">Function to invoke on HTTP status not 200 (failure)</param>
         /// <returns></returns>
-        public static async Task<int> Get<T>( string uri, Action<T> onSuccess, Action<RestException> onFailure ) where T : new()
+        public static async void Get<T>( string uri, Action<T> onSuccess, Action<RestException> onFailure ) where T : new()
         {
             HttpResponseMessage response = await _client.GetAsync( Url + uri );
             string result = await response.Content.ReadAsStringAsync();
 
-            if ( response.IsSuccessStatusCode )
+            try
             {
-                onSuccess.Invoke( JsonConvert.DeserializeObject<T>( result ) );
+                if ( response.IsSuccessStatusCode )
+                {
+                    onSuccess.Invoke( JsonConvert.DeserializeObject<T>( result ) );
+                }
+                else
+                {
+                    var exceptionResult = JsonConvert.DeserializeObject<RestException>( result );
+                    if( onFailure != null ) onFailure.Invoke( exceptionResult );
+                }
             }
-            else
+            catch( Exception e )
             {
-                var exceptionResult = JsonConvert.DeserializeObject<RestException>( result );
-                onFailure.Invoke( exceptionResult );
+                Console.WriteLine( e.Message );
             }
-
-            return (int) response.StatusCode;
-        }
-
-
-        public static async Task<T> Get2<T>(string uri)
-        {
-            HttpResponseMessage response = await _client.GetAsync(Url + uri);
-            string result = await response.Content.ReadAsStringAsync();
-            if (response.IsSuccessStatusCode)
-            {
-                return JsonConvert.DeserializeObject<T>(result);
-            }
-            return default(T);
+            
         }
     }
 }
