@@ -14,11 +14,11 @@ namespace xamarinrest.Services
 {
     public class RestService
     {
-        public static string Url = "http://localhost:8080/";
+        public static string Url = "http://127.0.0.1:8080/";
         public static readonly HttpClient _client = new HttpClient();
 
         /// <summary>
-        /// 
+        /// Authenticate
         /// </summary>
         /// <param name="username"></param>
         /// <param name="password"></param>
@@ -48,33 +48,14 @@ namespace xamarinrest.Services
             }             
         }
 
-     
-
         /// <summary>
-        ///  
+        ///  SetOAuthToken
         /// </summary>
         /// <param name="token"></param>
         public static void SetOAuthToken( string token )
         {
-            Prefs.putString("token", token);
-            _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-          
-        }
-
-        /// <summary>
-        /// Generic method to send entity with rest HTTP PUT/POST
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="uri"></param>
-        /// <param name="entity"></param>
-        /// <returns></returns>
-        public static async Task<T> Send<T>(string uri, Object entity) where T : new()
-        {
-            string content = JsonConvert.SerializeObject(entity);
-            StringContent restContent = new StringContent(content, Encoding.UTF8, "application/json");
-            HttpResponseMessage response = await _client.PostAsync(Url + uri, restContent);
-            string result = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<T>(result);
+            Prefs.putString( "token", token );
+            _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue( "Bearer", token );
         }
 
         /// <summary>
@@ -85,7 +66,7 @@ namespace xamarinrest.Services
         /// <param name="onSuccess">Function to invoke on HTTP status 200 (ok)</param>
         /// <param name="onFailure">Function to invoke on HTTP status not 200 (failure)</param>
         /// <returns></returns>
-        public static async Task<int> Send<T>( string uri, T entity, Action<T> onSuccess, Action<RestException> onFailure ) where T : new ()
+        public static async void Send<T>( string uri, T entity, Action<T> onSuccess, Action<RestException> onFailure ) where T : new ()
         {
             string content = JsonConvert.SerializeObject( entity );
             StringContent restContent = new StringContent( content, Encoding.UTF8, "application/json" );
@@ -93,17 +74,22 @@ namespace xamarinrest.Services
             HttpResponseMessage response = await _client.PostAsync( Url + uri, restContent );
             string result = await response.Content.ReadAsStringAsync();
 
-            if ( response.IsSuccessStatusCode )
+            try
             {
-                onSuccess.Invoke( JsonConvert.DeserializeObject<T>( result ) );
+                if ( response.IsSuccessStatusCode )
+                {
+                    onSuccess.Invoke( JsonConvert.DeserializeObject<T>( result ) );
+                }
+                else
+                {
+                    var exceptionResult = JsonConvert.DeserializeObject<RestException>( result );
+                    if( onFailure != null ) onFailure.Invoke( exceptionResult );
+                }
             }
-            else
+            catch( Exception e )
             {
-                var exceptionResult = JsonConvert.DeserializeObject<RestException>( result );
-                if (onFailure != null) onFailure.Invoke( exceptionResult );
+                Console.WriteLine( e.Message );
             }
-
-            return (int) response.StatusCode;
         }
 
         /// <summary>
@@ -157,8 +143,7 @@ namespace xamarinrest.Services
             catch( Exception e )
             {
                 Console.WriteLine( e.Message );
-            }
-            
+            } 
         }
     }
 }
