@@ -25,8 +25,11 @@ namespace xamarinrest.Services.Rest
         }
 
         //Faz com que seja chamado o REST no endereço de SYNC a cada X segundos
-        public static void StartAutoSync<T>( TimeSpan? syncTimeSpan = null ) where T : new()
+        public static void StartAutoSync<T>( string syncUri, TimeSpan? syncTimeSpan = null ) where T : new()
         {
+            new RestHolder<T>();
+            RestHolder<T>.instance.SyncUri = syncUri;
+
             Task.Run(() => {
                 requestRestAndSync<T>();
             });
@@ -86,8 +89,11 @@ namespace xamarinrest.Services.Rest
         }
 
         //Faz com que seja chamado o REST no endereço de SYNC DELETED a cada X segundos
-        public static void StartAutoSyncDeleted<T>( TimeSpan? syncDeleteTimeSpan = null ) where T : new()
+        public static void StartAutoSyncDeleted<T>( string deleteUri, TimeSpan? syncDeleteTimeSpan = null ) where T : new()
         {
+            new RestHolder<T>();
+            RestHolder<T>.instance.DeleteUri = deleteUri;
+
             Task.Run(() => {
                 requestRestAndSyncDeleted<T>();
             });
