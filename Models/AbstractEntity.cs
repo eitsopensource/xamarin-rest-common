@@ -41,37 +41,17 @@ namespace xamarinrest.Models
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+        
 
-
-        public void Set( Object obj )
-        {
-            if (obj == null) return; 
-
-            PropertyInfo[] properties = obj.GetType().GetProperties();
-            
-            foreach (var p in properties )
-            {
-               if ( p != null )
-                {
-
-                }
-            }
-        }
-
-        public void CopyValues<T>(T target, T source)
-        {
-            Type t = typeof(T);
-            
-            PropertyInfo[] properties = t.GetProperties(); //.Where(prop => prop.CanRead && prop.CanWrite);
+        public void CopyValues(Object source)
+        {            
+            PropertyInfo[] properties = this.GetType().GetProperties(); //.Where(prop => prop.CanRead && prop.CanWrite);
 
             foreach (var prop in properties)
             {
                 var value = prop.GetValue(source, null);
-                prop.SetValue(target, value, null);
+                prop.SetValue(this, value, null);
             }
-
-            Console.WriteLine("awwwwwwwwwwwwww");
-
         }
 
         public object Clone()
