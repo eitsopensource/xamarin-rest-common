@@ -77,7 +77,7 @@ namespace xamarinrest.Services
         /// <returns></returns>
         public static void Get<T>( string uri, Action<T> onSuccess, Action<RestException> onFailure = null )
         {            
-            GetAsync( Url + uri,
+            GetAsync( uri,
                 //onSuccess
                 ( response, json ) => {
                     onSuccess.Invoke( JsonConvert.DeserializeObject<T>( json ) );

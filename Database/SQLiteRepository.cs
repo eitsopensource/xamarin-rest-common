@@ -103,6 +103,18 @@ namespace xamarinrest.Database
         {
             return await Task.FromResult( new ObservableCollection<T>( db.Query<T>( query ) ) );      
         }
+        
+        /// <summary>
+        /// Retorna uma lista do que foi descrito na query
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        public static async Task<T> QuerySingleResult<T>( string query ) where T : new()
+        {
+            var list = await Task.FromResult( new ObservableCollection<T>( db.Query<T>( query ) ) );
+            return list?.Count > 0 ? list[0] : default(T);
+        }
 
         /// <summary>
         /// Retorna a entidade com o Id especificado
