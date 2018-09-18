@@ -52,21 +52,18 @@ namespace xamarinrest.Services.Rest.Token
         }
 
         //get access token method
-        public static async Task<string> GetAccessToken( string uri )
+        public static void GetAccessToken( string uri )
         {
-            var json = await RestService.GetAsync(uri);
-            string accessToken = JsonConvert.DeserializeObject<JObject>(json).Value<string>("access_token");
-            return accessToken;
-        }
+            RestService.GetAsync( uri,
+                //onSuccess
+                ( response, json ) => {
+                    string accessToken = JsonConvert.DeserializeObject<JObject>(json).Value<string>("access_token");
+                },
 
-        //manage user profile infos
-        public static async Task<string> GetUserProfile( string accessToken )
-        {
-            var userProfileUri = new StringBuilder().AppendFormat( _userProfileUri, accessToken ).ToString();
-            var userJson = await RestService.GetAsync( userProfileUri );
+                //onFailure
+                ( e ) => {
 
-            //var googleProfile = JsonConvert.DeserializeObject<GoogleProfile>(userJson);
-            return userJson;
+                });
         }
 
         //extract '?code=<hash>'

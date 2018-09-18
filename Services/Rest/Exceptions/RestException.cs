@@ -30,6 +30,12 @@ namespace xamarinrest.Services.Rest.Exceptions
         /// </summary>
         [JsonProperty("Message")]
         public string Message { get; set; }
+        
+        /// <summary>
+        /// Mensagem da exception
+        /// </summary>
+        [JsonProperty("Error_Description")]
+        public string ErrorDescription { set { Message = value; } }
 
         /// <summary>
         /// REST Path que deu erro (URI)
