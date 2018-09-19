@@ -9,6 +9,7 @@ using System.Diagnostics;
 using Newtonsoft.Json.Linq;
 using xamarinrest.Configuration;
 using xamarinrest.Services.Rest.Exceptions;
+using System.Text.RegularExpressions;
 
 namespace xamarinrest.Services
 {
@@ -102,7 +103,7 @@ namespace xamarinrest.Services
             PostAsync( uri, entity,
                 //onSuccess
                 ( response, json ) => {
-                    onSuccess.Invoke( JsonConvert.DeserializeObject<T>( json ) );
+                    onSuccess.Invoke( JsonConvert.DeserializeObject<T>( json, new JsonSerializerSettings { PreserveReferencesHandling = PreserveReferencesHandling.Objects } ) );
                 },
 
                 //onFailure
@@ -125,7 +126,7 @@ namespace xamarinrest.Services
 
                 if ( response.IsSuccessStatusCode )
                 {
-                    onSuccess.Invoke( response, json );
+                    onSuccess.Invoke( response, SanitizeJSON( json ) );
                 }
                 else
                 {
@@ -162,7 +163,7 @@ namespace xamarinrest.Services
 
                 if ( response.IsSuccessStatusCode )
                 {
-                    onSuccess.Invoke(response, json);
+                    onSuccess.Invoke( response, SanitizeJSON( json ) );
                 }
                 else
                 {
@@ -178,6 +179,29 @@ namespace xamarinrest.Services
                 var exceptionResult = JsonConvert.DeserializeObject<RestException>( json );
                 if ( onFailure != null ) onFailure.Invoke( exceptionResult );
             }
+        }
+
+        public static string SanitizeJSON( string originalJSONFromJava )
+        {
+            // Get ID right from Jackson to JSON.Net
+            string pattern = "\"@id\":" + "\"(\\S{8}-\\S{4}-\\S{4}-\\S{4}-\\S{12})\"";
+            string replacement = "\"$id\":\"$1\"";
+            Regex rgx = new Regex(pattern);
+            string output = rgx.Replace(originalJSONFromJava, replacement);
+
+            // Convert Jackson reference in array
+            //pattern = @",(\d+)";
+            //replacement = @",{""$ref"":""$1""}";
+            //rgx = new Regex(pattern);
+            //output = rgx.Replace(output, replacement);
+
+            // Convert single Jackson reference to ref
+            pattern = "\"(?!PastaRepositorio)\\w+\":" + "\"(\\S{8}-\\S{4}-\\S{4}-\\S{4}-\\S{12})\"";
+            replacement = "\"$ref\":" + "\"$1\"";
+            rgx = new Regex(pattern);
+            output = rgx.Replace(output, replacement);
+
+            return output;
         }
     }
 }
